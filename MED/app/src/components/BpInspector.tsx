@@ -1,0 +1,87 @@
+import { getBpModel, BP_MODELS } from '@/data/bp3dData';
+import { X } from 'lucide-react';
+
+const SYSTEM_LABELS: Record<string, string> = {
+  bones: 'Опорно-двигательный аппарат',
+  muscles: 'Мышечная система',
+  organs: 'Внутренние органы',
+  vessels: 'Сосудистая система',
+  nerves: 'Нервная система',
+  respiratory: 'Дыхательная система',
+};
+
+const SYSTEM_COLORS: Record<string, string> = {
+  bones: '#e9e2d0',
+  muscles: '#d96a5a',
+  organs: '#c98a5e',
+  vessels: '#c65a5a',
+  nerves: '#e5c76b',
+  respiratory: '#c9b8a0',
+};
+
+interface Props {
+  selectedId: string | null;
+  onClose: () => void;
+  onSelect: (id: string) => void;
+}
+
+export function BpInspector({ selectedId, onClose, onSelect }: Props) {
+  const model = selectedId ? getBpModel(selectedId) : undefined;
+
+  if (!model) {
+    return (
+      <div className="flex h-full flex-col items-center justify-center p-6 text-center">
+        <div className="mb-3 h-10 w-10 rounded-full border border-dashed border-[#d2d8d0]/25" />
+        <p className="max-w-[240px] text-[13px] leading-relaxed text-[#d2d8d0]/55">
+          Выберите модель на сцене или в списке — здесь появится описание.
+        </p>
+      </div>
+    );
+  }
+
+  const related = BP_MODELS.filter((m) => m.system === model.system && m.id !== model.id).slice(0, 8);
+
+  return (
+    <div className="flex h-full flex-col overflow-y-auto">
+      <div className="border-b border-[#d2d8d0]/10 p-4">
+        <div className="flex items-start justify-between gap-3">
+          <div
+            className="rounded-md px-2 py-1 font-mono text-[10px] uppercase tracking-[0.15em]"
+            style={{ backgroundColor: `${SYSTEM_COLORS[model.system]}22`, color: SYSTEM_COLORS[model.system] }}
+          >
+            {SYSTEM_LABELS[model.system]}
+          </div>
+          <button
+            onClick={onClose}
+            className="flex h-9 w-9 items-center justify-center rounded-lg text-[#d2d8d0]/60 transition-colors hover:bg-[#d2d8d0]/10 hover:text-[#f6f6f4]"
+            aria-label="Закрыть"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+        <h2 className="mt-3 text-xl font-semibold leading-tight text-[#f6f6f4]">{model.label}</h2>
+        <p className="mt-0.5 font-mono text-[12px] italic text-[#4dd2ff]/90">{model.labelLa}</p>
+      </div>
+
+      <div className="p-4">
+        <p className="text-[13px] leading-relaxed text-[#d2d8d0]/70">{model.description}</p>
+
+        <div className="mt-5 font-mono text-[10px] uppercase tracking-[0.18em] text-[#d2d8d0]/50">
+          Той же системы
+        </div>
+        <div className="mt-2 flex flex-wrap gap-1.5">
+          {related.map((r) => (
+            <button
+              key={r.id}
+              onClick={() => onSelect(r.id)}
+              className="flex min-h-[36px] items-center gap-1.5 rounded-full border border-[#d2d8d0]/12 px-3 py-1.5 text-[12px] text-[#d2d8d0]/70 transition-colors hover:border-[#4dd2ff]/40 hover:text-[#4dd2ff]"
+            >
+              <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: r.color }} />
+              {r.label}
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
